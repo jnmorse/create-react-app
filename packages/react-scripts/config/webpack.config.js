@@ -340,27 +340,33 @@ module.exports = function(webpackEnv) {
           use: [
             {
               options: {
-                cache: true,
+                emitWarning: true,
                 formatter: require.resolve('react-dev-utils/eslintFormatter'),
                 eslintPath: require.resolve('eslint'),
                 resolvePluginsRelativeTo: __dirname,
                 // @remove-on-eject-begin
                 ignore: process.env.EXTEND_ESLINT === 'true',
                 baseConfig: (() => {
-                  // We allow overriding the config only if the env variable is set
-                  if (process.env.EXTEND_ESLINT === 'true') {
-                    const eslintCli = new eslint.CLIEngine();
-                    let eslintConfig;
-                    try {
-                      eslintConfig = eslintCli.getConfigForFile(paths.appIndexJs);
-                    } catch (e) {
-                      console.error(e);
-                      process.exit(1);
-                    }
+                  const eslintCli = new eslint.CLIEngine();
+                  let eslintConfig;
+                  try {
+                    eslintConfig = eslintCli.getConfigForFile(paths.appIndexJs);
+                  } catch (e) {
+                    // A config couldn't be found.
+                  }
+
+                  // We allow overriding the config, only if it extends our config
+                  // (`extends` can be a string or array of strings).
+                  if (
+                    process.env.EXTEND_ESLINT &&
+                    eslintConfig &&
+                    eslintConfig.extends &&
+                    eslintConfig.extends.includes('jnmorse')
+                  ) {
                     return eslintConfig;
                   } else {
                     return {
-                      extends: [require.resolve('eslint-config-react-app')],
+                      extends: [require.resolve('eslint-config-jnmorse')],
                     };
                   }
                 })(),
